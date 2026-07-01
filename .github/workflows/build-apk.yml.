@@ -1,30 +1,69 @@
-    - name: Tworzenie projektu Cordova i budowanie APK
+    name: Budowanie aplikacji Android APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Pobranie kodu z repozytorium
+      uses: actions/checkout@v4
+
+    - name: Konfiguracja Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Instalacja Cordova
+      run: npm install -g cordova
+
+    - name: Konfiguracja środowiska Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Konfiguracja Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Tworzenie projektu Cordova i przegrywanie wszystkich plików
       run: |
-        # Tworzy czysty projekt Cordova
+        # Tworzy czysty projekt mobilny
         cordova create apk-build com.twojadomena.mojaaplikacja MojaAplikacja
         cd apk-build
-        
-        # Usuwa domyślne pliki startowe Cordovy
         rm -rf www/*
         
-        # Kopiuje Twoje pliki HTML, XML, JSON
+        # Przegrywanie kodu i stylów (HTML, JS, CSS, XML, JSON)
         cp ../*.html www/ 2>/dev/null || true
+        cp ../*.js www/ 2>/dev/null || true
+        cp ../*.css www/ 2>/dev/null || true
         cp ../*.xml www/ 2>/dev/null || true
         cp ../*.json www/ 2>/dev/null || true
-        cp ../*.css www/ 2>/dev/null || true
-        cp ../*.js www/ 2>/dev/null || true
         
-        # Kopiuje wszystkie Twoje grafiki (PNG, JPG, JPEG, GIF)
+        # Przegrywanie wszystkich grafik i animacji (PNG, JPG, GIF)
         cp ../*.png www/ 2>/dev/null || true
         cp ../*.jpg www/ 2>/dev/null || true
         cp ../*.jpeg www/ 2>/dev/null || true
         cp ../*.gif www/ 2>/dev/null || true
         
-        # Jeśli masz grafiki w osobnym folderze (np. "images" lub "assets"), skopiuj cały folder:
-        # cp -r ../images www/ 2>/dev/null || true
-        # cp -r ../assets www/ 2>/dev/null || true
+        # Przegrywanie pliku JAR
+        cp ../*.jar www/ 2>/dev/null || true
+        
+        # Instalacja programu unzip i automatyczne rozpakowanie pliku ZIP
+        sudo apt-get install -y unzip
+        unzip -o ../*.zip -d www/ 2>/dev/null || true
 
-        # Dodaje platformę Android i buduje APK
+        # Dodanie platformy Android i kompilacja do pliku APK
         cordova platform add android
         cordova build android --debug
 
+    - name: Zapisanie gotowego pliku APK jako artefakt
+      uses: actions/upload-artifact@v4
+      with:
+        name: aplikacja-apk
+        path: apk-build/platforms/android/app/build/outputs/apk/debug/app-debug.apk
