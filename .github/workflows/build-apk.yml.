@@ -1,0 +1,30 @@
+    - name: Tworzenie projektu Cordova i budowanie APK
+      run: |
+        # Tworzy czysty projekt Cordova
+        cordova create apk-build com.twojadomena.mojaaplikacja MojaAplikacja
+        cd apk-build
+        
+        # Usuwa domyślne pliki startowe Cordovy
+        rm -rf www/*
+        
+        # Kopiuje Twoje pliki HTML, XML, JSON
+        cp ../*.html www/ 2>/dev/null || true
+        cp ../*.xml www/ 2>/dev/null || true
+        cp ../*.json www/ 2>/dev/null || true
+        cp ../*.css www/ 2>/dev/null || true
+        cp ../*.js www/ 2>/dev/null || true
+        
+        # Kopiuje wszystkie Twoje grafiki (PNG, JPG, JPEG, GIF)
+        cp ../*.png www/ 2>/dev/null || true
+        cp ../*.jpg www/ 2>/dev/null || true
+        cp ../*.jpeg www/ 2>/dev/null || true
+        cp ../*.gif www/ 2>/dev/null || true
+        
+        # Jeśli masz grafiki w osobnym folderze (np. "images" lub "assets"), skopiuj cały folder:
+        # cp -r ../images www/ 2>/dev/null || true
+        # cp -r ../assets www/ 2>/dev/null || true
+
+        # Dodaje platformę Android i buduje APK
+        cordova platform add android
+        cordova build android --debug
+
